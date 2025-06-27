@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,14 +9,27 @@ import (
 	"strconv"
 )
 
+type configFlags struct {
+	DesiredCoverage int
+	CoverFile       string
+	Help            bool
+}
+
+var flags configFlags
+
+func init() {
+	flag.IntVar(&flags.DesiredCoverage, "desired-coverage", 80, "desired coverage")
+	flag.StringVar(&flags.CoverFile, "cover-file", "cover.out", "coverage out file")
+	flag.BoolVar(&flags.Help, "help", false, "show help")
+}
+
 // checkCodeCoverage runs the `go tool cover --func cover.out` command
 // to extract the total code coverage percentage. It compares the coverage
 // with the desired coverage threshold and prints a success or failure message
-// accordingly. The function takes an integer parameter `desiredCoverage`
-// which represents the desired coverage threshold.
-func checkCodeCoverage(desiredCoverage int) {
+// accordingly.
+func checkCodeCoverage(desiredCoverage int, coverFile string) {
 	// Run the `go tool cover --func cover.out` command and capture the output
-	out, err := exec.Command("go", "tool", "cover", "--func", "cover.out").Output()
+	out, err := exec.Command("go", "tool", "cover", "--func", coverFile).Output()
 	if err != nil {
 		// Print the error message to stderr and exit with a non-zero status code
 		fmt.Fprint(os.Stderr, "Error: ", string(err.(*exec.ExitError).Stderr))
@@ -47,9 +61,12 @@ func checkCodeCoverage(desiredCoverage int) {
 }
 
 func main() {
-	// Set the desired code coverage threshold
-	desiredCoverage := 80
+	flag.Parse()
+	if flags.Help {
+		flag.Usage()
+		os.Exit(0)
+	}
 
 	// Check the code coverage
-	checkCodeCoverage(desiredCoverage)
+	checkCodeCoverage(flags.DesiredCoverage, flags.CoverFile)
 }

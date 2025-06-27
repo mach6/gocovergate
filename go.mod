@@ -1,3 +1,3 @@
-module github.com/patrickhoefler/gocovergate
+module github.com/mach6/gocovergate
 
-go 1.17
+go 1.24
